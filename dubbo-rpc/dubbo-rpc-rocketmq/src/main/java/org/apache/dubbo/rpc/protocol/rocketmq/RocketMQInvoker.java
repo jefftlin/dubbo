@@ -46,8 +46,6 @@ import org.apache.rocketmq.remoting.exception.RemotingTooMuchRequestException;
 
 
 public class RocketMQInvoker<T> extends AbstractInvoker<T> {
-
-	
 	
 	private DubboCountCodec dubboCountCodec = new DubboCountCodec();
 	
@@ -61,13 +59,12 @@ public class RocketMQInvoker<T> extends AbstractInvoker<T> {
 	
 	private MessageQueue messageQueue;
 	
-	private Channel channel;
+	private Channel channel = new RocketMQChannel();
 
 	private String topic;
 	
 	private String groupModel;
-	
-	
+
 	
 	public RocketMQInvoker(Class<T> type, URL url,RocketMQProtocolServer rocketMQProtocolServer) {
 		super(type, url);
@@ -83,6 +80,7 @@ public class RocketMQInvoker<T> extends AbstractInvoker<T> {
 			messageQueue.setTopic(this.topic);
 			messageQueue.setQueueId(queueId);
 		}
+		this.channel.setAttribute("url", url);
 	}
 	
     protected ExecutorService getCallbackExecutor(URL url, Invocation inv) {
@@ -115,14 +113,13 @@ public class RocketMQInvoker<T> extends AbstractInvoker<T> {
 			request.setData(inv);
 			// dynamic，heap，direct
 			DynamicChannelBuffer buffer = new DynamicChannelBuffer(2048);
-			
 			dubboCountCodec.encode(channel, buffer, request);
 			
 			Message message  = new Message(topic, null, buffer.array());
 			//message.putUserProperty(MessageConst.PROPERTY_MESSAGE_TYPE, "MixAll.REPLY_MESSAGE_FLAG");
 			message.putUserProperty("consumer", NetUtils.getLocalHost());
 			if(Objects.nonNull(this.groupModel) && Objects.equals(this.groupModel, "select")) {
-				message.putUserProperty(CommonConstants.GENERIC_KEY, this.group);
+				message.putUserProperty(CommonConstants.GROUP_KEY, this.group);
 				message.putUserProperty(CommonConstants.VERSION_KEY, this.version);
 			}
 			if (isOneway) {

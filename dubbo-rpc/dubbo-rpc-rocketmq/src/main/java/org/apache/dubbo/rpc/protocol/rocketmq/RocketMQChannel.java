@@ -15,7 +15,7 @@ public class RocketMQChannel implements Channel {
 
 	@Override
 	public URL getUrl() {
-		return null;
+		return (URL)attributes.get("url");
 	}
 
 	@Override
@@ -25,7 +25,7 @@ public class RocketMQChannel implements Channel {
 
 	@Override
 	public InetSocketAddress getLocalAddress() {
-		return null;
+		return (InetSocketAddress)attributes.get("localAddress");
 	}
 
 	@Override
@@ -60,7 +60,7 @@ public class RocketMQChannel implements Channel {
 
 	@Override
 	public InetSocketAddress getRemoteAddress() {
-		return null;
+		return (InetSocketAddress)attributes.get("remoteAddress");
 	}
 
 	@Override

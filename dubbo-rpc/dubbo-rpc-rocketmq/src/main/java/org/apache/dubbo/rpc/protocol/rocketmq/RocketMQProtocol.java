@@ -129,11 +129,7 @@ public class RocketMQProtocol extends AbstractProtocol {
 					serverMap.put(key, createServer(url,key,model));
 				}
 				server = serverMap.get(key);
-				
-				RocketMQProtocolServer rocketMQProtocolServer = (RocketMQProtocolServer)server;
-				rocketMQProtocolServer.setModel(model);
-				rocketMQProtocolServer.setMessageListenerConcurrently(this.messageListenerConcurrently);
-				return rocketMQProtocolServer;
+				return (RocketMQProtocolServer)server;
 			}
 		} else {
 			server.reset(url);
@@ -143,6 +139,7 @@ public class RocketMQProtocol extends AbstractProtocol {
 	
 	 private ProtocolServer createServer(URL url,String key,String model) {
 		 RocketMQProtocolServer rocketMQProtocolServer = new RocketMQProtocolServer();
+		 ((DubboMessageListenerConcurrently) messageListenerConcurrently).setAttribute("url", url);
 		 rocketMQProtocolServer.setMessageListenerConcurrently(messageListenerConcurrently);
 		 rocketMQProtocolServer.setModel(model);
 		 rocketMQProtocolServer.reset(url);
@@ -156,13 +153,17 @@ public class RocketMQProtocol extends AbstractProtocol {
 		return rocketMQInvoker;
 	}
 
-	private class DubboMessageListenerConcurrently implements MessageListenerConcurrently {
+	class DubboMessageListenerConcurrently implements MessageListenerConcurrently {
 
 		private DubboCountCodec dubboCountCodec = new DubboCountCodec();
 
-		private Channel channel;
+		private Channel channel = new RocketMQChannel();
 
-		private DefaultMQProducer defaultMQProducer;
+		private DefaultMQProducer defaultMQProducer = new DefaultMQProducer();
+
+		public void setAttribute(String key, Object value) {
+			this.channel.setAttribute(key, value);
+		}
 
 		@Override
 		public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> msgs, ConsumeConcurrentlyContext context) {

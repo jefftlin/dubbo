@@ -18,9 +18,11 @@
 package org.apache.dubbo.rpc.protocol.rocketmq;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.rpc.Invoker;
+import org.apache.dubbo.common.utils.NetUtils;
+import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import org.apache.rocketmq.client.exception.MQClientException;
 
+import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,31 +31,29 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class RocketmqProtocolTest {
+public class RocketMQProtocolServerTest {
 
-    private static RocketMQProtocolServer rocketMQProtocolServer = new RocketMQProtocolServer();
     private static RocketMQProtocol INSTANCE;
-    private static String ROCKETMQ_URL_TEMPLATE = "rocketmq://124.223.198.143:9876";
-    private static URL registryUrl;
+    private static RocketMQProtocolServer rocketMQProtocolServer;
+    private static String ROCKETMQ_URL_TEMPLATE = "rocketmq://127.0.0.1:9876";
 
 
     @BeforeEach
     public void setUp() {
         // init
         INSTANCE = RocketMQProtocol.getRocketMQProtocol();
+        rocketMQProtocolServer = new RocketMQProtocolServer();
     }
 
     @AfterEach
     public void tearDown() {
         // release
         INSTANCE = null;
-        this.rocketMQProtocolServer = null;
+        rocketMQProtocolServer.close();
     }
 
     @Test
     public void testRocketmqProtocolServer() {
-        RocketMQProtocolServer rocketMQProtocolServer = new RocketMQProtocolServer();
-
         //set params
         Map<String, String> paramMap = new HashMap<>();
         paramMap.put("namespace", "");
@@ -62,51 +62,23 @@ public class RocketmqProtocolTest {
         paramMap.put("threads", "1");
 
         // set serverUrl
-        URL serverUrl = URL.valueOf(ROCKETMQ_URL_TEMPLATE + "?" + mapToString(paramMap));
+        URL serverUrl = URL.valueOf(ROCKETMQ_URL_TEMPLATE + "?" + TestRocketMQUtils.mapToString(paramMap));
         rocketMQProtocolServer.reset(serverUrl);
-        rocketMQProtocolServer.setMessageListenerConcurrently(INSTANCE.getMessageListenerConcurrently());
+        MessageListenerConcurrently messageListenerConcurrently = INSTANCE.getMessageListenerConcurrently();
+        ((RocketMQProtocol.DubboMessageListenerConcurrently) messageListenerConcurrently).setAttribute("url", serverUrl);
+        ((RocketMQProtocol.DubboMessageListenerConcurrently) messageListenerConcurrently).setAttribute("remoteAddress",
+            new InetSocketAddress(serverUrl.getHost(),serverUrl.getPort()));
+        ((RocketMQProtocol.DubboMessageListenerConcurrently) messageListenerConcurrently).setAttribute("localAddress",
+            new InetSocketAddress("127.0.0.1", NetUtils.getAvailablePort()));
+        rocketMQProtocolServer.setMessageListenerConcurrently(messageListenerConcurrently);
         try {
-            rocketMQProtocolServer.createProducer();
+            rocketMQProtocolServer.createConsumer();
             //assert
             Assertions.assertNotNull(rocketMQProtocolServer.getDefaultMQProducer());
             Assertions.assertNotNull(rocketMQProtocolServer.getDefaultMQPushConsumer());
         } catch (MQClientException e) {
             throw new RuntimeException(e);
         }
-
-        this.rocketMQProtocolServer = rocketMQProtocolServer;
-    }
-
-    @Test
-    public void testExport() {
-        //set params
-        Map<String, String> paramMap = new HashMap<>();
-        paramMap.put("version", "4.9.2");
-        paramMap.put("brokerName", "broker-a");
-        paramMap.put("group", "DEFAULT_GROUP");
-        paramMap.put("groupModel", "select");
-        paramMap.put("topic", "dubbo_rpc_topic");
-        paramMap.put("queueId", "");
-        paramMap.put("corethreads", "1");
-        paramMap.put("threads", "1");
-
-        registryUrl = URL.valueOf(ROCKETMQ_URL_TEMPLATE + "?" + mapToString(paramMap));
-        RocketMQProtocol rocketMQProtocol = new RocketMQProtocol();
-        Invoker invoker = new RocketMQInvoker<>(RocketMQInvoker.class, registryUrl, this.rocketMQProtocolServer);
-
-        //assert
-        Assertions.assertNotNull(rocketMQProtocol.export(invoker));
-    }
-
-    public static String mapToString(Map<String, String> paramMap) {
-        StringBuilder parameters = new StringBuilder();
-        for (Map.Entry<String, String> entry : paramMap.entrySet()) {
-            parameters.append(entry.getKey());
-            parameters.append("=");
-            parameters.append(entry.getValue());
-            parameters.append("&;");
-        }
-        return parameters.toString();
     }
 
 }

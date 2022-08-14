@@ -10,6 +10,8 @@ import org.apache.rocketmq.client.consumer.DefaultMQPushConsumer;
 import org.apache.rocketmq.client.consumer.listener.MessageListenerConcurrently;
 import org.apache.rocketmq.client.exception.MQClientException;
 import org.apache.rocketmq.client.producer.DefaultMQProducer;
+import org.apache.rocketmq.common.consumer.ConsumeFromWhere;
+import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
 
 public class RocketMQProtocolServer implements ProtocolServer {
 
@@ -104,19 +106,21 @@ public class RocketMQProtocolServer implements ProtocolServer {
 
 			this.defaultMQProducer = defaultMQProducer;
 			if(Objects.equals(this.model, CommonConstants.PROVIDER) || Objects.equals(this.model, CommonConstants.CALLBACK_INSTANCES_LIMIT_KEY)) {
-				this.createProducer();
+				this.createConsumer();
 			}
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
 	
-	public synchronized void createProducer() throws MQClientException {
+	public synchronized void createConsumer() throws MQClientException {
 		DefaultMQPushConsumer defaultMQPushConsumer = new DefaultMQPushConsumer(this.namespace,
 				this.consumerGroup);
 		
 		defaultMQPushConsumer.setNamesrvAddr(this.address);
 		defaultMQPushConsumer.setInstanceName("consumer- "+inistanceName);
+		defaultMQPushConsumer.setMessageModel(MessageModel.CLUSTERING);
+		defaultMQPushConsumer.setConsumeFromWhere(ConsumeFromWhere.CONSUME_FROM_FIRST_OFFSET);
 		defaultMQPushConsumer.setConsumeThreadMin(url.getParameter(CommonConstants.CORE_THREADS_KEY,Objects.equals(this.model, CommonConstants.PROVIDER)? CommonConstants.DEFAULT_THREADS:4));
 		defaultMQPushConsumer.setConsumeThreadMax(url.getParameter(CommonConstants.THREADS_KEY, Objects.equals(this.model, CommonConstants.PROVIDER)?32:1));
 		defaultMQPushConsumer.subscribe(RocketMQProtocolConstant.DUBBO_DEFAULT_PROTOCOL_TOPIC, defaultMQPushConsumer.buildMQClientId());
