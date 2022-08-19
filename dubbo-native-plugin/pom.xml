@@ -32,7 +32,11 @@
     <packaging>maven-plugin</packaging>
     <dependencies>
 
-
+		<dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>dubbo-common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.apache.maven</groupId>
             <artifactId>maven-plugin-api</artifactId>

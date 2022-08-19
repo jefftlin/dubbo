@@ -423,6 +423,7 @@
                                     <include>org.apache.dubbo:dubbo-registry-multiple</include>
                                     <include>org.apache.dubbo:dubbo-registry-nacos</include>
                                     <include>org.apache.dubbo:dubbo-registry-zookeeper</include>
+                                    <include>org.apache.dubbo:dubbo-registry-nameservice</include>
                                     <include>org.apache.dubbo:dubbo-registry</include>
                                     <include>org.apache.dubbo:dubbo-remoting-api</include>
                                     <include>org.apache.dubbo:dubbo-remoting-http</include>
@@ -437,6 +438,7 @@
                                     <include>org.apache.dubbo:dubbo-rpc-injvm</include>
                                     <include>org.apache.dubbo:dubbo-rpc-rest</include>
                                     <include>org.apache.dubbo:dubbo-rpc-triple</include>
+                                    <include>org.apache.dubbo:dubbo-rpc-rocketmq</include>
                                     <include>org.apache.dubbo:dubbo-rpc</include>
                                     <include>org.apache.dubbo:dubbo-serialization-api</include>
                                     <include>org.apache.dubbo:dubbo-serialization-hessian2</include>
