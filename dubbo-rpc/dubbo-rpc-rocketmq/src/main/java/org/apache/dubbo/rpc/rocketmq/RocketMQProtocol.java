@@ -66,9 +66,9 @@ public class RocketMQProtocol extends AbstractProtocol {
 	@Override
 	public <T> Exporter<T> export(Invoker<T> invoker) throws RpcException {
 		URL url = invoker.getUrl();
-		String topic = url.getParameter("topic");
-		RocketMQExporter<T> exporter = new RocketMQExporter<T>(invoker, topic, exporterMap);
+		RocketMQExporter<T> exporter = new RocketMQExporter<T>(invoker, url, exporterMap);
 
+		String topic = exporter.getKey();
 		RocketMQProtocolServer rocketMQProtocolServer = this.openServer(url,CommonConstants.PROVIDER);
 		try {
 			String groupModel = url.getParameter("groupModel");
@@ -184,7 +184,7 @@ public class RocketMQProtocol extends AbstractProtocol {
 						Object object = rocketmqCountCodec.decode(channel, heapChannelBuffer);
 						String topic = messageExt.getTopic();
 						Invocation inv = (Invocation)((Request)object).getData();
-						if(timeout-50 > System.currentTimeMillis()) {
+						if(timeout-50 < System.currentTimeMillis()) {
 							logger.warn("");
 							continue;
 						}
