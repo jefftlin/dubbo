@@ -127,7 +127,7 @@ public class ServiceName {
     	}
     	CRC32 crc32 = new CRC32();
     	crc32.update(value.getBytes());
-    	value = value.replace(".", "-") + Long.toString(crc32.getValue());
+    	value = value.replace(".", "-")+ NAME_SEPARATOR + Long.toString(crc32.getValue());
     	return value;
     }
     

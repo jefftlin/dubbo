@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -121,20 +122,24 @@ public class NameServiceRegistry extends FailbackRegistry {
 		if (!this.topicList.getTopicList().contains(serviceName.getValue())) {
 			for (Entry<String, BrokerData> entry : this.clusterInfo.getBrokerAddrTable().entrySet()) {
 				String brokerArr = entry.getValue().getBrokerAddrs().get(MixAll.MASTER_ID);
-				try {
-					TopicConfig topicConfig = new TopicConfig(serviceName.getValue());
-					topicConfig.setReadQueueNums(8);
-					topicConfig.setWriteQueueNums(8);
-					this.client.getMQClientAPIImpl().createTopic(brokerArr, null, topicConfig, timeoutMillis);
-				} catch (Exception e) {
-					logger.error(e.getMessage(), e);
-				}
+				this.createTopic(serviceName, brokerArr);
 			}
 			return true;
 		} else {
 			return false;
 		}
 
+	}
+	
+	private void createTopic(ServiceName serviceName , String brokerArr) {
+		try {
+			TopicConfig topicConfig = new TopicConfig(serviceName.getValue());
+			topicConfig.setReadQueueNums(8);
+			topicConfig.setWriteQueueNums(8);
+			this.client.getMQClientAPIImpl().createTopic(brokerArr, null, topicConfig, timeoutMillis);
+		} catch (Exception e) {
+			logger.error(e.getMessage(), e);
+		}
 	}
 
 	@Override
@@ -152,6 +157,11 @@ public class NameServiceRegistry extends FailbackRegistry {
 
 	@Override
 	public void doSubscribe(URL url, NotifyListener listener) {
+		
+		if(Objects.equals( url.getCategory(), org.apache.dubbo.common.constants.RegistryConstants.CONFIGURATORS_CATEGORY )) {
+			return;
+		}
+		
 		List<URL> urls = new ArrayList<URL>();
 		ServiceName serviceName = this.createServiceName(url);
 		if (this.isNotRoute) {
@@ -174,16 +184,27 @@ public class NameServiceRegistry extends FailbackRegistry {
 			TopicRouteData topicRouteData = this.client.getMQClientAPIImpl().getTopicRouteInfoFromNameServer(topic,
 					this.timeoutMillis);
 
+			HashMap<String, BrokerData> brokerDataCluster = clusterInfo.getBrokerAddrTable();
+			
 			Map<String, String> brokerAddrBybrokerName = new HashMap<>();
 			for (BrokerData brokerData : topicRouteData.getBrokerDatas()) {
 				brokerAddrBybrokerName.put(brokerData.getBrokerName(), brokerData.selectBrokerAddr());
 			}
 			for (QueueData queueData : topicRouteData.getQueueDatas()) {
-				if (PermName.isReadable(queueData.getPerm())) {
-					for (int i = 0; i < queueData.getReadQueueNums(); i++) {
-						URL newUrl = this.createProviderURL(serviceName, url, i);
-						urls.add(newUrl.addParameter("brokerName", queueData.getBrokerName()));
-					}
+				if (!PermName.isReadable(queueData.getPerm())) {
+					continue;
+				}
+				HashMap<String,BrokerData>  topicBrokerDataCluster = new HashMap<>(brokerDataCluster);
+				for (int i = 0; i < queueData.getReadQueueNums(); i++) {
+					URL newUrl = this.createProviderURL(serviceName, url, i);
+					urls.add(newUrl.addParameter("brokerName", queueData.getBrokerName()));
+					topicBrokerDataCluster.remove(queueData.getBrokerName());
+				}
+				if(topicBrokerDataCluster.isEmpty()) {
+					break;
+				}
+				for(Entry<String,BrokerData> entry : topicBrokerDataCluster.entrySet()) {
+					this.createTopic(serviceName, entry.getValue().selectBrokerAddr());
 				}
 			}
 		} catch (Exception e) {
