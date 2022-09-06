@@ -39,7 +39,7 @@ import java.io.OutputStream;
 import java.lang.reflect.Type;
 
 
-@SuppressWarnings({ "deprecation", "serial" })
+@SuppressWarnings({"deprecation", "serial"})
 public class DecodeableRpcResult extends AppResponse implements Codec, Decodeable {
 
     private static final Logger log = LoggerFactory.getLogger(DecodeableRpcResult.class);
@@ -84,7 +84,7 @@ public class DecodeableRpcResult extends AppResponse implements Codec, Decodeabl
             Thread.currentThread().setContextClassLoader(invocation.getServiceModel().getClassLoader());
         }
         ObjectInput in = CodecSupport.getSerialization(channel.getUrl(), serializationType)
-                .deserialize(channel.getUrl(), input);
+            .deserialize(channel.getUrl(), input);
 
         byte flag = in.readByte();
         switch (flag) {

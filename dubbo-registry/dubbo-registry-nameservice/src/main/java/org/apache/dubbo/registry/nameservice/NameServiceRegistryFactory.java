@@ -20,11 +20,11 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.registry.Registry;
 import org.apache.dubbo.registry.support.AbstractRegistryFactory;
 
-public class NameServiceRegistryFactory extends AbstractRegistryFactory{
+public class NameServiceRegistryFactory extends AbstractRegistryFactory {
 
-  @Override
-  protected Registry createRegistry(URL url) {
-    return new NameServiceRegistry(url);
-  }
+    @Override
+    protected Registry createRegistry(URL url) {
+        return new NameServiceRegistry(url);
+    }
 
 }

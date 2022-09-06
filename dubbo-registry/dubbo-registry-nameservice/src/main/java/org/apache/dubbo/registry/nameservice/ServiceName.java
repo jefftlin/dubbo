@@ -1,3 +1,19 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.apache.dubbo.registry.nameservice;
 
 import static org.apache.dubbo.common.constants.CommonConstants.GROUP_KEY;
@@ -15,9 +31,9 @@ import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.utils.StringUtils;
 
 public class ServiceName {
-	
-	public static final String DEFAULT_PARAM_VALUE = "";
-	
+
+    public static final String DEFAULT_PARAM_VALUE = "";
+
     public static final String NAME_SEPARATOR = "_";
 
     public static final String VALUE_SEPARATOR = ",";
@@ -33,7 +49,7 @@ public class ServiceName {
     private String group;
 
     private String value;
-    
+
     private String groupModel;
 
     public ServiceName() {
@@ -47,7 +63,7 @@ public class ServiceName {
         this.groupModel = url.getParameter("groupModel");
         this.value = toValue();
     }
-    
+
     public boolean isConcrete() {
         return isConcrete(serviceInterface) && isConcrete(version) && isConcrete(group);
     }
@@ -61,7 +77,7 @@ public class ServiceName {
 
         // Not match comparison
         if (!StringUtils.isEquals(this.category, serviceName.category)
-                && !matchRange(this.category, serviceName.category)) {
+            && !matchRange(this.category, serviceName.category)) {
             return false;
         }
 
@@ -80,12 +96,12 @@ public class ServiceName {
 
         // range condition
         if (!StringUtils.isEquals(this.version, serviceName.version)
-                && !matchRange(this.version, serviceName.version)) {
+            && !matchRange(this.version, serviceName.version)) {
             return false;
         }
 
         if (!StringUtils.isEquals(this.group, serviceName.group) &&
-                !matchRange(this.group, serviceName.group)) {
+            !matchRange(this.group, serviceName.group)) {
             return false;
         }
 
@@ -116,28 +132,28 @@ public class ServiceName {
     }
 
     private String toValue() {
-    	String value = null;
-    	if(Objects.equals(this.groupModel, "topic")) {
-    		value= category +
-                    NAME_SEPARATOR + serviceInterface +
-                    NAME_SEPARATOR + version +
-                    NAME_SEPARATOR + group;
-    	}else {
-    		value =  category + NAME_SEPARATOR + serviceInterface;
-    	}
-    	CRC32 crc32 = new CRC32();
-    	crc32.update(value.getBytes());
-    	value = value.replace(".", "-")+ NAME_SEPARATOR + Long.toString(crc32.getValue());
-    	return value;
+        String value = null;
+        if (Objects.equals(this.groupModel, "topic")) {
+            value = category +
+                NAME_SEPARATOR + serviceInterface +
+                NAME_SEPARATOR + version +
+                NAME_SEPARATOR + group;
+        } else {
+            value = category + NAME_SEPARATOR + serviceInterface;
+        }
+        CRC32 crc32 = new CRC32();
+        crc32.update(value.getBytes());
+        value = value.replace(".", "-") + NAME_SEPARATOR + Long.toString(crc32.getValue());
+        return value;
     }
-    
-    
+
+
     public String getValue() {
-    	return value;
+        return value;
     }
-    
+
     public String getServiceInterface() {
-    	return this.serviceInterface;
+        return this.serviceInterface;
     }
 
     @Override

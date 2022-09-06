@@ -35,7 +35,7 @@ public class RocketMQCodecSupport {
             return CodecSupport.getSerializationById((byte) serializationTypeObj);
         }
         return url.getOrDefaultFrameworkModel().getExtensionLoader(Serialization.class).getExtension(
-                url.getParameter(org.apache.dubbo.remoting.Constants.SERIALIZATION_KEY, DefaultSerializationSelector.getDefaultRemotingSerialization()));
+            url.getParameter(org.apache.dubbo.remoting.Constants.SERIALIZATION_KEY, DefaultSerializationSelector.getDefaultRemotingSerialization()));
     }
 
     public static Serialization getResponseSerialization(URL url, AppResponse appResponse) {
@@ -48,6 +48,6 @@ public class RocketMQCodecSupport {
             }
         }
         return url.getOrDefaultFrameworkModel().getExtensionLoader(Serialization.class).getExtension(
-                url.getParameter(Constants.SERIALIZATION_KEY, DefaultSerializationSelector.getDefaultRemotingSerialization()));
+            url.getParameter(Constants.SERIALIZATION_KEY, DefaultSerializationSelector.getDefaultRemotingSerialization()));
     }
 }

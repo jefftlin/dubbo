@@ -94,7 +94,7 @@ public class RocketMQCodec extends ExchangeCodec {
                             data = decodeEventData(channel, in, eventPayload);
                         }
                     } else {
-                        DecodeableRpcResult result = new DecodeableRpcResult(channel, res, is,(Invocation) getRequestData(id), proto);
+                        DecodeableRpcResult result = new DecodeableRpcResult(channel, res, is, (Invocation) getRequestData(id), proto);
                         result.decode();
                         data = result;
                     }
@@ -160,7 +160,7 @@ public class RocketMQCodec extends ExchangeCodec {
     }
 
     @SuppressWarnings("deprecation")
-	@Override
+    @Override
     protected void encodeRequestData(Channel channel, ObjectOutput out, Object data, String version) throws IOException {
         RpcInvocation inv = (RpcInvocation) data;
 
@@ -178,7 +178,7 @@ public class RocketMQCodec extends ExchangeCodec {
         Object[] args = inv.getArguments();
         if (args != null) {
             for (int i = 0; i < args.length; i++) {
-            	out.writeObject(args[i]);
+                out.writeObject(args[i]);
             }
         }
         out.writeAttachments(inv.getObjectAttachments());
